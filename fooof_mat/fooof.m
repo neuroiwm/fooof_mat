@@ -45,12 +45,14 @@ function fooof_results = fooof(freqs, power_spectrum, f_range, settings, return_
     f_range = py.list(f_range);
 
     % Initialize FOOOF object
-    fm = py.fooof.FOOOF(settings.peak_width_limits, ...
+    peak_width_limits = py.list(settings.peak_width_limits);
+    verbose = py.numpy.array(settings.verbose);
+    fm = py.fooof.FOOOF(peak_width_limits, ...
                         settings.max_n_peaks, ...
                         settings.min_peak_height, ...
                         settings.peak_threshold, ...
                         settings.aperiodic_mode, ...
-                        settings.verbose);
+                        verbose);
 
     % Run FOOOF fit
     fm.fit(freqs, power_spectrum, f_range)
@@ -58,7 +60,7 @@ function fooof_results = fooof(freqs, power_spectrum, f_range, settings, return_
     % Extract outputs
     fooof_results = fm.get_results();
     fooof_results = fooof_unpack_results(fooof_results);
-    
+
     % Re-calculating r-squared
     %   r_squared doesn't seem to get computed properly (in NaN).
     %   It is unclear why this happens, other than the error can be traced
@@ -66,7 +68,7 @@ function fooof_results = fooof(freqs, power_spectrum, f_range, settings, return_
     %   gets two arrays as input.
     %   Therefore, we can simply recalculate r-squared
     coefs = corrcoef(double(py.array.array('d', fm.power_spectrum)), ...
-                     double(py.array.array('d', fm.fooofed_spectrum_)));
+        double(py.array.array('d', fm.fooofed_spectrum_)));
     fooof_results.r_squared = coefs(2);
 
     % Also return the actual model fit, if requested
@@ -75,6 +77,7 @@ function fooof_results = fooof(freqs, power_spectrum, f_range, settings, return_
 
         % Get the model, and add outputs to fooof_results
         model_out = fooof_get_model(fm);
+
         for field = fieldnames(model_out)'
             fooof_results.(field{1}) = model_out.(field{1});
         end
