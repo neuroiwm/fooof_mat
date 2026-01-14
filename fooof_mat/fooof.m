@@ -40,6 +40,15 @@ function fooof_results = fooof(freqs, power_spectrum, f_range, settings, return_
     settings = fooof_check_settings(settings);
 
     % Convert inputs
+
+    if size(freqs, 1) > size(freqs, 2)
+        freqs = freqs';
+    end
+
+    if size(power_spectrum, 1) > size(power_spectrum, 2)
+        power_spectrum = power_spectrum';
+    end
+
     freqs = py.numpy.array(freqs);
     power_spectrum = py.numpy.array(power_spectrum);
     f_range = py.list(f_range);
@@ -68,7 +77,7 @@ function fooof_results = fooof(freqs, power_spectrum, f_range, settings, return_
     %   gets two arrays as input.
     %   Therefore, we can simply recalculate r-squared
     coefs = corrcoef(double(py.array.array('d', fm.power_spectrum)), ...
-        double(py.array.array('d', fm.fooofed_spectrum_)));
+                     double(py.array.array('d', fm.fooofed_spectrum_)));
     fooof_results.r_squared = coefs(2);
 
     % Also return the actual model fit, if requested
